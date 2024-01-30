@@ -42,6 +42,7 @@ pub enum CommandType {
     // Some commands supported by stub only
     EraseFlash = 0xd0,
     EraseRegion = 0xd1,
+    ReadRegion = 0xd8,
 }
 
 impl CommandType {
@@ -165,6 +166,11 @@ pub enum Command<'a> {
         offset: u32,
         size: u32,
     },
+    ReadRegion {
+        offset: u32,
+        size: u32,
+    },
+
 }
 
 impl<'a> Command<'a> {
@@ -191,6 +197,7 @@ impl<'a> Command<'a> {
             Command::EraseFlash { .. } => CommandType::EraseFlash,
             Command::EraseRegion { .. } => CommandType::EraseRegion,
             Command::FlashMd5 { .. } => CommandType::FlashMd5,
+            Command::ReadRegion { .. } => CommandType::ReadRegion,
         }
     }
 
@@ -378,7 +385,17 @@ impl<'a> Command<'a> {
                 writer.write_all(&size.to_le_bytes())?;
                 writer.write_all(&(0u32.to_le_bytes()))?;
                 writer.write_all(&(0u32.to_le_bytes()))?;
+            },
+            Command::ReadRegion { offset, size } => {
+                // length
+                writer.write_all(&(8u16.to_le_bytes()))?;
+                // checksum
+                writer.write_all(&(0u32.to_le_bytes()))?;
+                // data
+                writer.write_all(&offset.to_le_bytes())?;
+                writer.write_all(&size.to_le_bytes())?;
             }
+
         };
         Ok(())
     }

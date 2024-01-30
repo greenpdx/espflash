@@ -75,6 +75,8 @@ enum Commands {
     /// '--to-binary' options, plus the ability to print a partition table
     /// in tabular format.
     PartitionTable(PartitionTableArgs),
+    ///
+    ReadRegion(EraseRegionArgs),
     /// Generate a binary application image and save it to a local disk
     ///
     /// If the '--merge' option is used, then the bootloader, partition table,
@@ -177,6 +179,7 @@ fn main() -> Result<()> {
         Commands::Flash(args) => flash(args, &config),
         Commands::Monitor(args) => serial_monitor(args, &config),
         Commands::PartitionTable(args) => partition_table(args),
+        Commands::ReadRegion(args) => read_region(args, &config),
         Commands::SaveImage(args) => save_image(args),
         Commands::WriteBin(args) => write_bin(args, &config),
         Commands::ChecksumMd5(args) => checksum_md5(&args, &config),
@@ -356,5 +359,12 @@ fn write_bin(args: WriteBinArgs, config: &Config) -> Result<()> {
 
     flasher.write_bin_to_flash(args.addr, &buffer, Some(&mut EspflashProgress::default()))?;
 
+    Ok(())
+}
+
+fn read_region(args: EraseRegionArgs, config: &Config) -> Result<()> {
+    let mut flasher = connect(&args.connect_args, config, false, false)?;
+    let mut conn = flasher.connection();
+    //println!("{:?}",conn);
     Ok(())
 }
